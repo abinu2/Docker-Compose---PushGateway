@@ -6,7 +6,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=7d'          # keep short on 1 GB RAM (e.g., t3.micro)
+      - '--storage.tsdb.retention.time=7d'
       - '--storage.tsdb.retention.size=2GB'
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
@@ -28,9 +28,9 @@ services:
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=changeme          # ← change this before deploying
+      - GF_SECURITY_ADMIN_PASSWORD=changeme
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3000     # update this to your EC2 public IP or domain later
+      - GF_SERVER_ROOT_URL=http://localhost:3000
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
     volumes:
@@ -54,9 +54,26 @@ services:
     networks:
       - monitoring
 
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    container_name: mssql
+    hostname: mssql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Passw0rd!"   # Added an exclamation mark; MSSQL has strict complexity rules
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - monitoring
+    restart: unless-stopped
+
 volumes:
   prometheus_data:
   grafana_data:
+  mssql_data:
 
 networks:
   monitoring:
